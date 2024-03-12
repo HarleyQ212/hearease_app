@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <title>Real-time Audio</title>
+    <style>
+      /* Paste your CSS code here */
+      .myBtn {
+        width: 9.25em; /* Set the desired width */
+        height: 9.25em; /* Set the desired height */
+        padding: 0;
+        border: none;
+        outline: none;
+        color: rgb(255, 255, 255);
+        background: #3498db;
+        cursor: pointer;
+        position: relative;
+        z-index: 0;
+        border-radius: 50%; /* Make the button a complete circle */
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
+
+      .myBtn i {
+        font-size: 50px;
+        color: #fff;
+      }
+
+      .myBtn:before {
+        content: "";
+        background: linear-gradient(
+          45deg,
+          #ff0000,
+          #ff7300,
+          #fffb00,
+          #48ff00,
+          #00ffd5,
+          #002bff,
+          #7a00ff,
+          #ff00c8,
+          #ff0000
+        );
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        background-size: 400%;
+        z-index: -1;
+        filter: blur(5px);
+        -webkit-filter: blur(5px);
+        width: calc(100% + 4px);
+        height: calc(100% + 4px);
+        animation: glowing-myBtn 20s linear infinite;
+        transition: opacity 0.3s ease-in-out;
+        border-radius: 50%; /* Make the glow a complete circle */
+      }
+
+      @keyframes glowing-myBtn {
+        0% {
+          background-position: 0 0;
+        }
+        50% {
+          background-position: 400% 0;
+        }
+        100% {
+          background-position: 0 0;
+        }
+      }
+
+      .myBtn:after {
+        z-index: -1;
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: #222;
+        left: 0;
+        top: 0;
+        border-radius: 50%; /* Make the background a complete circle */
+      }
+    </style>
+  </head>
+
+  <body>
+    <button
+      class="myBtn"
+      role="button"
+      id="toggleButton"
+    >
+      <i class="fa fa-microphone"></i>
+    </button>
+
+    <script>
+      console.log("HTML file loaded successfully");
+      document.addEventListener("DOMContentLoaded", function () {
+        const toggleButton = document.getElementById("toggleButton");
+
+        let audioContext;
+        let mediaStreamSource;
+
+        toggleButton.addEventListener("click", function () {
+          if (!audioContext) {
+            audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+          }
+
+          if (mediaStreamSource) {
+            // Stop listening
+            mediaStreamSource.disconnect();
+            mediaStreamSource = null;
+            toggleButton.innerHTML = '<i class="fa fa-microphone"></i>';
+            toggleButton.style.backgroundColor = "#3498db";
+
+            // YAHAN SE APP PR MSG
+            window.ReactNativeWebView.postMessage(
+              JSON.stringify({ type: "status", status: "stop" })
+            );
+          } else {
+            // Start listening
+            navigator.mediaDevices
+              .getUserMedia({ audio: true })
+              .then(function (stream) {
+                mediaStreamSource =
+                  audioContext.createMediaStreamSource(stream);
+                mediaStreamSource.connect(audioContext.destination);
+
+                toggleButton.innerHTML = '<i id="icon" class="fa fa-microphone-slash"></i>';
+                toggleButton.style.backgroundColor = "#e74c3c";
+
+                // YAHAN SE APP PR MSG
+                window.ReactNativeWebView.postMessage(
+                  JSON.stringify({ type: "status", status: "start" })
+                );
+              })
+              .catch(function (error) {
+                console.error("Error accessing microphone: ", error);
+              });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
